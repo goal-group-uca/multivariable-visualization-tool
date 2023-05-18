@@ -1,0 +1,216 @@
+#:kivy 1.0.9
+#:import Factory kivy.factory.Factory
+#:import Thread threading.Thread
+#:import Label kivy.uix.label
+
+<SelectBusRoute@Popup>:
+    title: 'Add new Bus Route'
+    auto_dismiss: False
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+        BoxLayout:
+            size_hint: 1, 0.4
+            orientation: 'horizontal'
+            Label:
+                size_hint: 0.01, 1
+            Label:
+                text: 'Bus Route'
+                font_size: 24
+                size_hint: 0.7, 1
+            Label:
+                size_hint: 0.05, 1
+            Spinner:
+                size_hint: 0.7, 1
+                id: bus_route_selection
+                pos_hint: {'center_x':0.5, 'center_y':0.5}
+                values: app.root.load_bus_routes()
+                on_text: 
+                    values = app.root.show_solutions(bus_route_selection.text)
+                    bus_solution_selection.values = values
+                    bus_solution_selection.text = values[0]
+            Label:
+                size_hint: 0.01, 1
+        BoxLayout:
+            size_hint: 1, 0.4
+            orientation: 'horizontal'
+            id: choose_mepbo
+            Label:
+                size_hint: 0.01, 1
+            Label:
+                text: 'Solution to plot'
+                font_size: 24
+                size_hint: 0.7, 1
+            Label:
+                size_hint: 0.05, 1                
+            Spinner:
+                size_hint: 0.7, 1
+                id: bus_solution_selection
+                pos_hint: {'center_x':0.5, 'center_y':0.5}
+            Label:
+                size_hint: 0.01, 1
+        BoxLayout:
+            size_hint: 1, 0.4
+            orientation: 'horizontal'
+            Label:
+                size_hint: 0.01, 1
+            Label:
+                text: 'Recharge?'
+                font_size: 24
+                size_hint: 0.7, 1
+            Label:
+                size_hint: 0.05, 1                
+            CheckBox:
+                size_hint: 0.7, 1
+                id: recharge_bool
+                pos_hint: {'center_x':0.5, 'center_y':0.5}
+            Label:
+                size_hint: 0.01, 1
+        BoxLayout:
+            size_hint: 1, 0.4
+            orientation: 'horizontal'
+            Label:
+                size_hint: 0.01, 1
+            Label:
+                text: 'Bus Route direction'
+                font_size: 24
+                size_hint: 0.7, 1
+            Label:
+                size_hint: 0.05, 1
+            Spinner:
+                size_hint: 0.7, 1
+                id: bus_direction
+                text: 'Round-trip'
+                pos_hint: {'center_x':0.5, 'center_y':0.5}
+                values: ['One-way', 'Back-way', 'Round-trip']
+            Label:
+                size_hint: 0.01, 1
+        BoxLayout:
+            size_hint: 1, 0.4
+            orientation: 'horizontal'
+            Label:
+                size_hint: 0.01, 1
+            Label:
+                text: 'Dashed line?'
+                font_size: 24
+                size_hint: 0.7, 1
+            Label:
+                size_hint: 0.05, 1
+            CheckBox:
+                size_hint: 0.7, 1
+                id: dashed_line
+                pos_hint: {'center_x':0.5, 'center_y':0.5}
+            Label:
+                size_hint: 0.01, 1
+
+        Label:
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: 1, 0.4
+            Label:
+                size_hint: 0.15, 1
+            MDRectangleFlatButton:
+                size_hint: 0.1, 1
+                text: "Add"
+                pos_hint: {'center_x':0.5, 'center_y':0.5}
+                on_release: 
+                    app.root.add_bus_route(bus_route_selection.text, bus_solution_selection.text, bus_direction.text, recharge_bool.active, dashed_line.active, app.root.ids.list_bus_routes.values);\
+                    app.root.ids.list_bus_routes.text = app.root.ids.list_bus_routes.values[0]
+                    root.dismiss()
+                
+            Label:
+                size_hint: 0.1, 1
+            MDRectangleFlatButton:
+                size_hint: 0.1, 1
+                text: "Cancel"
+                pos_hint: {'center_x':0.5, 'center_y':0.5}
+                on_release: root.dismiss()
+                
+            Label:
+                size_hint: 0.15, 1
+
+
+<LoadingScreen@Popup>:
+    title: 'Generating Bus Route Maps...'
+    id: loading_screen
+    auto_dismiss: False
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+        Label:
+            text: 'Generating Bus Route Maps...'
+            font_size: 24
+            size_hint: 1, 0.25
+        MDSpinner:
+            size_hint: None, None
+            size: dp(46), dp(46)
+            pos_hint: {'center_x':0.5, 'center_y':0.5}
+            active: True 
+        Label:
+
+<BusRouteVisualizer>
+    Image:
+        source: 'resources/logo.png'
+        size_hint: 1, 0.06
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint: 1, 0.1
+        Label:
+            text: 'Bus Routes to Plot'
+            font_size: 24
+        BoxLayout:
+            orientation: 'horizontal'
+            Label:
+                size_hint: 0.01, 1
+            Spinner:
+                id: list_bus_routes
+                size_hint: 0.5, 1
+                pos_hint: {'center_x':0.5, 'center_y':0.5}
+            Label:
+                size_hint: 0.01, 1
+            MDRectangleFlatButton
+                text: "Add"
+                size_hint: 0.1, 1
+                pos_hint: {'center_x':0.5, 'center_y':0.5}
+                on_release: Factory.SelectBusRoute().open()
+            Label:
+                size_hint: 0.01, 1
+            MDRectangleFlatButton
+                text: "Delete"
+                size_hint: 0.1, 1
+                pos_hint: {'center_x':0.5, 'center_y':0.5}
+                on_release: 
+                    root.delete_bus_route(list_bus_routes.text, list_bus_routes.values)
+                    list_bus_routes.text = "" if len(list_bus_routes.values) == 0 else list_bus_routes.values[0]
+            Label:
+                size_hint: 0.01, 1
+        Label:
+            text: 'Output filename'
+            font_size: 24
+        MDTextFieldRect:
+            hint_text: 'Write filename...'
+            size_hint: 0.5, 1
+            id: CSV_filename
+            pos_hint: {'center_x':0.5, 'center_y':0.5}
+        Label:
+        MDRectangleFlatIconButton:
+            icon: 'map'
+            text: 'Generate Bus Route Maps...'
+            size_hint: 0.9, 1
+            pos_hint: {'center_x':0.5, 'center_y':0.5}
+            on_release: 
+                aux = Factory.LoadingScreen()
+                aux.open()
+                Thread(target=root.create_maps, args=(root.ids.CSV_filename.text, aux)).start()
+        Label:
+        MDRectangleFlatIconButton:
+            icon: 'web'
+            text: 'Open Bus Route Maps...'
+            size_hint: 0.9, 1   
+            on_release: root.open_maps(root.ids.CSV_filename.text)
+            pos_hint: {'center_x':0.5, 'center_y':0.5}
+        Label:
+
+
+
+        
